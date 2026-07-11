@@ -20,7 +20,8 @@ function App() {
   const [activeTab, setActiveTab] = useState<Tab>('command');
 
   useEffect(() => {
-    const eventSource = new EventSource('http://localhost:5000/api/intelligence/stream');
+    const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+    const eventSource = new EventSource(`${apiBase}/api/intelligence/stream`);
 
     eventSource.onmessage = (event) => {
       try {

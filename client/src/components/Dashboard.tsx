@@ -139,7 +139,8 @@ export default function Dashboard({ data }: { data: IntelligencePayload }) {
   useEffect(() => {
     const fetchBriefing = async () => {
       try {
-        const res = await fetch('http://localhost:5000/api/ai/briefing');
+        const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+        const res = await fetch(`${apiBase}/api/ai/briefing`);
         const json = await res.json();
         setBriefing(json.briefing);
         setBriefingTime(new Date(json.generatedAt).toLocaleTimeString());
