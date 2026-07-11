@@ -8,7 +8,7 @@
   ],
   "scripts": {
     "dev": "npm run dev --workspaces",
-    "build": "npm run build --workspace=client && cp -r client/dist dist",
+    "build": "npm run build --workspace=client && mkdir -p dist && cp -R client/dist/. dist",
     "test": "npm run test --workspaces"
   }
 }
