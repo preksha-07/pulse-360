@@ -35,3 +35,12 @@ jobs:
 
     - name: Build Client (TypeScript compilation + Vite packaging)
       run: npm run build --workspace=client
+
+    - name: Run Workspace Tests
+      run: npm test
+
+    - name: Install Playwright Chromium
+      run: npx playwright install chromium --with-deps
+
+    - name: Run Playwright E2E Tests
+      run: npm run test:e2e

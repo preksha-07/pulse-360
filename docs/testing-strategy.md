@@ -36,35 +36,30 @@ Validates the accuracy of the +10m/20m/30m forecast outputs against mocked telem
 Testing components that contact the `@google/generative-ai` endpoint utilizes dependency mocking:
 - **Briefing Test**: Mocks the Gemini SDK response to confirm the backend successfully handles raw text output without breaking the REST handler.
 - **Fan Chat Test**: Verifies that when the Gemini API responds with an error, the fallback engine cleanly catches the rejection and answers the query using internal regex keyword matching.
+- **Endpoint Tests**: Uses `supertest` to mock REST connections, validating schemas, health states, and error handling.
 
 ---
 
-## 4. End-to-End (E2E) Testing Strategy
+## 4. Component & Integration UI Testing
 
-Playwright test suites execute headlessly to verify critical UI pathways:
+Vitest coupled with React Testing Library executes in a `jsdom` environment to verify critical client UI components and layout logic:
 
 ```
-tests/e2e/
-├── dashboard.spec.ts   # Checks KPI updates, tab switches, and live SSE loading.
-├── fan-chat.spec.ts    # Enters a question, submits, and checks if messages append to history.
-└── security.spec.ts    # Triggers drill mode and checks if the evacuation timer scales.
+client/src/tests/
+├── App.test.tsx            # Verifies SSE connection link state, loaders, and tab switches
+├── Dashboard.test.tsx      # Renders KPI panels, charts, and debounced briefings
+├── FanPortal.test.tsx      # Manages language selector, recommended gates, and chat submission
+├── VolunteerPortal.test.tsx # Verifies active rosters, reassignment status tags, and zone loads
+├── SecurityPortal.test.tsx  # Verifies heatmap density colors, evacuation comparisons, and plans
+└── Widget.test.tsx         # Assures widget rendering logic
 ```
 
-### Sample E2E Script Workflow (Playwright)
-```typescript
-import { test, expect } from '@playwright/test';
+### Running the Test Suite
 
-test('Fan Portal multilingual chat assistant renders answers', async ({ page }) => {
-  await page.goto('http://localhost:5173/');
-  
-  // Click on Fan Portal tab
-  await page.click('button:has-text("Fan Portal")');
-  
-  // Type message in chatbot
-  await page.fill('input[placeholder*="Ask anything"]', 'Where is the best gate?');
-  await page.press('input[placeholder*="Ask anything"]', 'Enter');
-  
-  // Verify chat bubbles appear
-  await expect(page.locator('.chat-messages')).toContainText('PULSE AI');
-});
+You can execute the entire monorepo testing suite (both server and client) with a single command from the root directory:
+
+```bash
+npm test
 ```
+
+This runs both test runner instances in parallel or sequentially depending on workspace flags, ensuring full CI pipeline compliance.

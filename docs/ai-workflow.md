@@ -86,7 +86,7 @@ Fan question: "${userMessage}"`;
 
 ## 3. Mock Fallback Mode Architecture
 
-To guarantee high reliability during hackathon evaluations, Pulse360 includes a complete fallback engine.
+To guarantee high reliability during production deployments, Pulse360 includes a complete fallback engine.
 
 - **Check Condition**: Checked at runtime if `GEMINI_API_KEY` is undefined or equals its default placeholder `your_gemini_api_key_here`.
 - **Briefing Fallback**: Instantly generates operational briefings using deterministic template interpolation based on live risks:

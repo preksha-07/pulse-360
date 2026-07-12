@@ -117,9 +117,13 @@ app.post('/api/ai/fan-assist', async (req, res) => {
 });
 
 // Start engine and server
-telemetryEngine.start(2000);
+if (process.env.NODE_ENV !== 'test') {
+  telemetryEngine.start(2000);
 
-app.listen(PORT, () => {
-  console.log(`[Pulse360] Server running on http://localhost:${PORT}`);
-  console.log(`[Pulse360] Gemini mode: ${process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY !== 'your_gemini_api_key_here' ? 'LIVE' : 'MOCK'}`);
-});
+  app.listen(PORT, () => {
+    console.log(`[Pulse360] Server running on http://localhost:${PORT}`);
+    console.log(`[Pulse360] Gemini mode: ${process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY !== 'your_gemini_api_key_here' ? 'LIVE' : 'MOCK'}`);
+  });
+}
+
+export { app };

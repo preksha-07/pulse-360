@@ -6,6 +6,8 @@ This document describes the technical architecture, data flow, and components of
 
 ## 1. System Topology
 
+![Pulse360 System Topology](assets/architecture.png)
+
 Pulse360 is built as a modular monorepo containing a React frontend and an Express backend. Real-time updates are pushed to the client using **Server-Sent Events (SSE)**, which establishes a persistent, memory-efficient pipeline for streaming telemetry, future predictions, and coordinated recommendations.
 
 ```mermaid
@@ -119,3 +121,45 @@ The React client exposes role-specific portal views that consume the unified Ser
 - **`FanPortal.tsx` (Fan Companion)**: Shows personalized gates, transport details, and houses the multilingual Gemini chatbot.
 - **`VolunteerPortal.tsx` (Task Manager)**: Handles task assignments and live roster shifts.
 - **`SecurityPortal.tsx` (Threat Panel)**: Shows heatmaps, live risks, and controls evacuation simulators.
+
+---
+
+## 6. End-to-End Live Sequence Data Flow
+
+The following sequence diagram details how real-time ticks flow from the telemetry simulation engine, calculate predictions, trigger the coordinator agent, and propagate downstream to clients via the persistent Server-Sent Events (SSE) connection:
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant Engine as TelemetryEngine (Server)
+    participant Predictor as PredictionEngine (Server)
+    participant Coordinator as CoordinatorAgent (Server)
+    participant Stream as SSE Router (Server)
+    participant Client as React App (Client Browser)
+    participant Gemini as Gemini AI Layer
+
+    %% Connection Setup
+    Client->>Stream: Establish connection (GET /api/intelligence/stream)
+    Stream-->>Client: HTTP 200 OK (Keep-Alive, Event-Stream)
+
+    %% Ticking loop
+    loop Every 2 Seconds
+        Engine->>Engine: Mutate state (Fluctuate stands, advance metro)
+        Engine->>Predictor: Dispatch State Tick (current telemetry vectors)
+        Predictor->>Predictor: Compute timelines (+10m/+20m/+30m offsets)
+        Predictor->>Predictor: Evaluate risk overload flags (>80% capacity)
+        Predictor->>Coordinator: Forward PredictionState (telemetry + timeline + risks)
+        Coordinator->>Coordinator: Evaluate agent rules (Crowd, Emergency, Volunteer, etc.)
+        Coordinator->>Stream: Broadcast unified IntelligencePayload
+        Stream->>Client: Send SSE message (data: JSON string)
+        Client->>Client: Render dynamic components & re-draw heatmaps
+    end
+
+    %% Gemini chatbot interaction
+    Note over Client, Gemini: Multilingual Fan Chatbot Flow
+    Client->>Gemini: Submit question (POST /api/ai/fan-assist)
+    Gemini->>Gemini: Call Gemini 2.0 Flash API (or fallback mock)
+    Gemini-->>Client: Respond with context-aware reply
+    Client->>Client: Render answer bubble in chat panel
+```
+

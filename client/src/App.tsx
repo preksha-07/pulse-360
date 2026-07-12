@@ -19,6 +19,18 @@ function App() {
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>('command');
 
+  const handleKeyDown = (e: React.KeyboardEvent, index: number) => {
+    if (e.key === 'ArrowRight') {
+      const nextIndex = (index + 1) % TABS.length;
+      setActiveTab(TABS[nextIndex].id);
+      setTimeout(() => document.getElementById(`tab-${TABS[nextIndex].id}`)?.focus(), 0);
+    } else if (e.key === 'ArrowLeft') {
+      const prevIndex = (index - 1 + TABS.length) % TABS.length;
+      setActiveTab(TABS[prevIndex].id);
+      setTimeout(() => document.getElementById(`tab-${TABS[prevIndex].id}`)?.focus(), 0);
+    }
+  };
+
   useEffect(() => {
     const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5000';
     const eventSource = new EventSource(`${apiBase}/api/intelligence/stream`);
@@ -75,12 +87,17 @@ function App() {
       </header>
 
       {/* Tab Navigation */}
-      <div className="tabs">
-        {TABS.map(tab => (
+      <div className="tabs" role="tablist" aria-label="Portal Navigation">
+        {TABS.map((tab, index) => (
           <button
             key={tab.id}
+            id={`tab-${tab.id}`}
+            role="tab"
+            aria-selected={activeTab === tab.id}
+            aria-controls={`${tab.id}-panel`}
             className={`tab ${activeTab === tab.id ? 'active' : ''}`}
             onClick={() => setActiveTab(tab.id)}
+            onKeyDown={(e) => handleKeyDown(e, index)}
             style={activeTab === tab.id ? { color: tab.color, borderColor: `${tab.color}55`, background: `${tab.color}15` } : {}}
           >
             <span className="tab-dot" style={activeTab === tab.id ? { background: tab.color } : {}} />
@@ -90,10 +107,20 @@ function App() {
       </div>
 
       {/* Portal Views */}
-      {activeTab === 'command' && <Dashboard data={data} />}
-      {activeTab === 'fan' && <FanPortal data={data} />}
-      {activeTab === 'volunteer' && <VolunteerPortal data={data} />}
-      {activeTab === 'security' && <SecurityPortal data={data} />}
+      <main id="portal-content">
+        <div id="command-panel" role="tabpanel" aria-labelledby="tab-command" hidden={activeTab !== 'command'}>
+          {activeTab === 'command' && <Dashboard data={data} />}
+        </div>
+        <div id="fan-panel" role="tabpanel" aria-labelledby="tab-fan" hidden={activeTab !== 'fan'}>
+          {activeTab === 'fan' && <FanPortal data={data} />}
+        </div>
+        <div id="volunteer-panel" role="tabpanel" aria-labelledby="tab-volunteer" hidden={activeTab !== 'volunteer'}>
+          {activeTab === 'volunteer' && <VolunteerPortal data={data} />}
+        </div>
+        <div id="security-panel" role="tabpanel" aria-labelledby="tab-security" hidden={activeTab !== 'security'}>
+          {activeTab === 'security' && <SecurityPortal data={data} />}
+        </div>
+      </main>
     </div>
   );
 }
