@@ -133,3 +133,28 @@ Pulse360 is stateless, making it ideal for containerized hosting on Google Cloud
       --platform managed \
       --allow-unauthenticated
     ```
+
+### Vercel (Client) + Render (Server)
+
+For quick, serverless-grade hosting, you can host the client statically on Vercel and the Express server on Render (which supports long-running SSE streams):
+
+#### 1. Deploy Backend Server to Render:
+1. Log in to [Render](https://render.com/) and click **New +** ➜ **Web Service**.
+2. Connect your GitHub repository.
+3. In the Settings, configure:
+   * **Root Directory**: `server`
+   * **Build Command**: `npm run build`
+   * **Start Command**: `npm start`
+4. Add the following **Environment Variables**:
+   * `GEMINI_API_KEY`: *your-gemini-api-key*
+   * `NODE_ENV`: `production`
+
+#### 2. Deploy Frontend Client to Vercel:
+1. Log in to [Vercel](https://vercel.com/) and click **Add New** ➜ **Project**.
+2. Import your GitHub repository.
+3. Vercel will automatically read the [vercel.json](file:///c:/Users/pk07p/Desktop/Antigravity/PromptWars/3rd/vercel.json) file.
+4. Add the following **Environment Variables**:
+   * **Key**: `VITE_API_URL`
+   * **Value**: Your Render Web Service URL (e.g. `https://pulse360-backend.onrender.com`)
+5. Click **Deploy**.
+
