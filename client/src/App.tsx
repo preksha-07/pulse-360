@@ -4,11 +4,13 @@ import Dashboard from './components/Dashboard';
 import FanPortal from './components/FanPortal';
 import VolunteerPortal from './components/VolunteerPortal';
 import SecurityPortal from './components/SecurityPortal';
+import ScenarioSimulator from './components/ScenarioSimulator';
 
-type Tab = 'command' | 'fan' | 'volunteer' | 'security';
+type Tab = 'command' | 'simulator' | 'fan' | 'volunteer' | 'security';
 
 const TABS: { id: Tab; label: string; color: string }[] = [
   { id: 'command', label: '🏟 Command Center', color: 'var(--cyan)' },
+  { id: 'simulator', label: '🎛 Scenario Simulator', color: 'var(--purple)' },
   { id: 'fan', label: '👤 Fan Portal', color: 'var(--cyan)' },
   { id: 'volunteer', label: '👷 Volunteer', color: 'var(--amber)' },
   { id: 'security', label: '👮 Security', color: 'var(--crimson)' },
@@ -80,7 +82,7 @@ function App() {
         <div className="header-status">
           <div className="live-badge">
             <div className="live-dot" />
-            LIVE TELEMETRY
+            {data.telemetry.activeScenario !== 'none' ? 'SIMULATION MODE' : 'LIVE TELEMETRY'}
           </div>
           <span className="timestamp">{new Date(data.telemetry.timestamp).toLocaleTimeString()}</span>
         </div>
@@ -110,6 +112,9 @@ function App() {
       <main id="portal-content">
         <div id="command-panel" role="tabpanel" aria-labelledby="tab-command" hidden={activeTab !== 'command'}>
           {activeTab === 'command' && <Dashboard data={data} />}
+        </div>
+        <div id="simulator-panel" role="tabpanel" aria-labelledby="tab-simulator" hidden={activeTab !== 'simulator'}>
+          {activeTab === 'simulator' && <ScenarioSimulator data={data} />}
         </div>
         <div id="fan-panel" role="tabpanel" aria-labelledby="tab-fan" hidden={activeTab !== 'fan'}>
           {activeTab === 'fan' && <FanPortal data={data} />}

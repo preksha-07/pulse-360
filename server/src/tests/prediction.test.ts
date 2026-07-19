@@ -27,7 +27,14 @@ describe('PredictionEngine', () => {
         waterUsageLiters: 1000,
         wasteKg: 100
       },
-      volunteers: []
+      volunteers: [],
+      stadiumHealth: 87,
+      crowdSafety: 92,
+      transportHealth: 81,
+      securityHealth: 95,
+      volunteerCoverage: 90,
+      evacuationReadiness: 94,
+      activeScenario: 'none'
     };
   });
 

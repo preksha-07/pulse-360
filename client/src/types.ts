@@ -34,6 +34,15 @@ export interface TelemetryState {
   transport: TransportData[];
   sustainability: SustainabilityData;
   volunteers: VolunteerData[];
+  
+  // New simulation & health metrics (made optional to prevent test breaks)
+  stadiumHealth?: number;
+  crowdSafety?: number;
+  transportHealth?: number;
+  securityHealth?: number;
+  volunteerCoverage?: number;
+  evacuationReadiness?: number;
+  activeScenario?: string;
 }
 export interface PredictionPoint {
   timeOffsetMinutes: number;
@@ -48,6 +57,14 @@ export interface RiskPrediction {
   probabilityPercent: number;
   timeToImpactMinutes: number;
   reasoning: string[];
+  confidencePercent?: number; // Optional explainability confidence
+}
+export interface TimelineRecommendation {
+  timeOffsetMinutes: number;
+  label: string;
+  title: string;
+  action: string;
+  confidencePercent: number;
 }
 export interface PredictionState {
   currentTelemetry: TelemetryState;
@@ -55,6 +72,7 @@ export interface PredictionState {
   timeline: {
     gates: Record<string, PredictionPoint[]>;
   };
+  timelineRecommendations?: TimelineRecommendation[]; // Optional timeline recommendations
 }
 export interface AgentRecommendation {
   id: string;
@@ -62,6 +80,7 @@ export interface AgentRecommendation {
   action: string;
   reasoning: string;
   priority: 'low' | 'medium' | 'high' | 'critical';
+  confidencePercent?: number; // Optional explainability confidence
 }
 export interface IntelligencePayload {
   telemetry: TelemetryState;

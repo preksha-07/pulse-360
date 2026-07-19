@@ -7,8 +7,8 @@ import dotenv from 'dotenv';
 import { z } from 'zod';
 import { telemetryEngine } from './telemetry/engine';
 import { predictionEngine } from './prediction/engine';
-import { coordinatorAgent } from './agents/coordinator';
-import { generateOperationalBriefing, fanAssistant } from './ai/gemini';
+import { decisionEngine } from './agents/decision';
+import { generateOperationalBriefing, fanAssistant, generateIncidentReplay } from './ai/gemini';
 
 dotenv.config();
 
@@ -56,11 +56,16 @@ const FanAssistSchema = z.object({
   language: z.enum(['English', 'Spanish', 'French', 'Arabic', 'Portuguese', 'German', 'Japanese', 'Korean']).default('English')
 });
 
+const ScenarioSchema = z.object({
+  scenario: z.enum(['none', 'heavy_rain', 'metro_delay', 'medical', 'gate_closure', 'vip', 'goal_surge'])
+});
+
 // ── Helper ────────────────────────────────────────────────────────────────────
 function getCurrentIntelligence() {
   const telemetry = (telemetryEngine as any).state;
   const prediction = predictionEngine.generatePredictions(telemetry);
-  const recommendations = coordinatorAgent.process(prediction);
+  const recommendations = decisionEngine.process(prediction);
+  prediction.timelineRecommendations = decisionEngine.getTimelineRecommendations(prediction);
   return { telemetry, prediction, recommendations };
 }
 
@@ -79,7 +84,8 @@ app.get('/api/intelligence/stream', (req, res) => {
 
   const unsubscribe = telemetryEngine.subscribe((telemetryState) => {
     const prediction = predictionEngine.generatePredictions(telemetryState);
-    const recommendations = coordinatorAgent.process(prediction);
+    const recommendations = decisionEngine.process(prediction);
+    prediction.timelineRecommendations = decisionEngine.getTimelineRecommendations(prediction);
     const payload = { telemetry: telemetryState, predictions: prediction, recommendations };
     res.write(`data: ${JSON.stringify(payload)}\n\n`);
   });
@@ -114,6 +120,44 @@ app.post('/api/ai/fan-assist', async (req, res) => {
     console.error('[Fan Assistant] Error:', err);
     res.status(500).json({ error: 'Assistant unavailable. Please try again.' });
   }
+});
+
+// AI: Incident Replay Generator
+app.get('/api/ai/replay', async (req, res) => {
+  const scenario = req.query.scenario as string || telemetryEngine.activeScenario;
+  if (!scenario || scenario === 'none') {
+    return res.status(400).json({ error: 'No active scenario to replay.' });
+  }
+  try {
+    const replayMarkdown = await generateIncidentReplay(scenario);
+    res.json({ replay: replayMarkdown, scenario, generatedAt: new Date().toISOString() });
+  } catch (err) {
+    console.error('[Incident Replay] Error:', err);
+    res.status(500).json({ error: 'Incident Replay generation failed.' });
+  }
+});
+
+// Simulator: Get Active Scenario
+app.get('/api/simulator/scenario', (req, res) => {
+  res.json({ activeScenario: telemetryEngine.activeScenario });
+});
+
+// Simulator: Inject Scenario
+app.post('/api/simulator/scenario', (req, res) => {
+  const parsed = ScenarioSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'Invalid scenario name.', details: parsed.error.flatten() });
+  }
+  
+  const { scenario } = parsed.data;
+  telemetryEngine.setActiveScenario(scenario);
+  res.json({ status: 'success', activeScenario: scenario });
+});
+
+// Simulator: Reset Scenario
+app.post('/api/simulator/reset', (req, res) => {
+  telemetryEngine.setActiveScenario('none');
+  res.json({ status: 'success', activeScenario: 'none' });
 });
 
 // Start engine and server

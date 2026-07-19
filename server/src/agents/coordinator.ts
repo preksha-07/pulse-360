@@ -14,7 +14,8 @@ export class CoordinatorAgent {
           domain: 'volunteer',
           action: 'Reassign 5 volunteers from South Concourse to Gate 6',
           reasoning: `Expected metro surge in ${risk.timeToImpactMinutes} minutes will overwhelm current staff.`,
-          priority: 'high'
+          priority: 'high',
+          confidencePercent: 92
         });
         
         recommendations.push({
@@ -22,7 +23,8 @@ export class CoordinatorAgent {
           domain: 'navigation',
           action: 'Redirect incoming general admission to Gate 1',
           reasoning: 'Gate 6 is projected to hit 100% capacity; Gate 1 has 55% reserve capacity.',
-          priority: 'medium'
+          priority: 'medium',
+          confidencePercent: 89
         });
       }
 
@@ -32,7 +34,8 @@ export class CoordinatorAgent {
           domain: 'crowd',
           action: `Open overflow lanes at ${risk.targetId}`,
           reasoning: `Capacity is critically high. Wait times are unacceptable.`,
-          priority: 'critical'
+          priority: 'critical',
+          confidencePercent: 95
         });
       }
     });
@@ -44,7 +47,8 @@ export class CoordinatorAgent {
         domain: 'sustainability',
         action: 'Dim concourse lighting by 15%',
         reasoning: 'Energy usage exceeds target threshold. Impact on visibility is negligible during daylight.',
-        priority: 'low'
+        priority: 'low',
+        confidencePercent: 98
       });
     }
 

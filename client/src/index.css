@@ -380,4 +380,48 @@ body::before {
 
 /* === RESPONSIVE === */
 @media (max-width: 1100px) { .grid-3col { grid-template-columns: 1fr 1fr; } .kpi-row { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 700px) { .grid-3col, .grid-2col { grid-template-columns: 1fr; } .kpi-row { grid-template-columns: 1fr 1fr; } .header { flex-direction: column; align-items: flex-start; gap: 12px; } }
+@media (max-width: 700px) { 
+  .grid-3col, .grid-2col { grid-template-columns: 1fr; } 
+  .kpi-row { grid-template-columns: 1fr 1fr; } 
+  .header { flex-direction: column; align-items: flex-start; gap: 12px; } 
+  .sub-health-grid { grid-template-columns: 1fr 1fr !important; }
+}
+
+/* === SIMULATOR & TIMELINE UPDATES === */
+:root {
+  --purple: #a855f7;
+  --purple-dim: rgba(168, 85, 247, 0.12);
+  --purple-glow: rgba(168, 85, 247, 0.3);
+}
+
+.tab.active[style*="--purple"] {
+  background: var(--purple-dim) !important;
+  color: var(--purple) !important;
+  border-color: var(--purple-glow) !important;
+}
+
+.scenario-btn:hover {
+  border-color: var(--cyan-glow) !important;
+  background: rgba(0, 229, 255, 0.04) !important;
+  transform: translateY(-2px);
+}
+
+.reset-btn:hover {
+  background: rgba(255, 59, 59, 0.22) !important;
+  box-shadow: 0 0 16px var(--crimson-glow);
+}
+
+.replay-btn:hover {
+  background: rgba(0, 229, 255, 0.22) !important;
+  box-shadow: 0 0 16px var(--cyan-glow);
+}
+
+.replay-markdown ul, .replay-markdown ol {
+  padding-left: 20px;
+  margin-bottom: 16px;
+}
+
+.replay-markdown li {
+  margin-bottom: 8px;
+}
+

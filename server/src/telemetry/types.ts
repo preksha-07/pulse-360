@@ -38,4 +38,13 @@ export interface TelemetryState {
   transport: TransportData[];
   sustainability: SustainabilityData;
   volunteers: VolunteerData[];
+  
+  // New simulation & health metrics
+  stadiumHealth: number;
+  crowdSafety: number;
+  transportHealth: number;
+  securityHealth: number;
+  volunteerCoverage: number;
+  evacuationReadiness: number;
+  activeScenario: string;
 }

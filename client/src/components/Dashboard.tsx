@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import type { IntelligencePayload, GateData, RiskPrediction, AgentRecommendation, ZoneData, VolunteerData } from '../types';
+import { useState, useEffect, useMemo, memo } from 'react';
+import type { IntelligencePayload, GateData, RiskPrediction, AgentRecommendation, ZoneData, VolunteerData, TimelineRecommendation } from '../types';
 import Widget from './Widget';
 
 // ── helpers ──────────────────────────────────────────────────────────────────
@@ -12,49 +12,79 @@ function getCapClass(v: number) {
 
 // ── sub-components ────────────────────────────────────────────────────────────
 
-function GateCard({ gate }: { gate: GateData }) {
+const GateCard = memo(function GateCard({ gate }: { gate: GateData }) {
   const cls = getCapClass(gate.capacityPercent);
+  const isClosed = gate.capacityPercent === 0;
   return (
-    <div className={`gate-card ${cls === 'crit' ? 'critical' : ''}`}>
+    <div className={`gate-card ${cls === 'crit' ? 'critical' : ''}`} style={isClosed ? { opacity: 0.5 } : {}}>
       <div className="gate-header">
         <span className="gate-name">{gate.name}</span>
-        <span className={`gate-percent ${cls}`}>{gate.capacityPercent}%</span>
+        <span className={`gate-percent ${isClosed ? '' : cls}`}>
+          {isClosed ? 'CLOSED' : `${gate.capacityPercent}%`}
+        </span>
       </div>
-      <div className="progress-bar">
-        <div className={`progress-fill ${cls}`} style={{ width: `${gate.capacityPercent}%` }} />
-      </div>
+      {!isClosed && (
+        <div className="progress-bar">
+          <div className={`progress-fill ${cls}`} style={{ width: `${gate.capacityPercent}%` }} />
+        </div>
+      )}
       <div className="gate-meta">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-        <span>{gate.queueTimeMinutes} min wait</span>
+        <span>{isClosed ? 'N/A' : `${gate.queueTimeMinutes} min wait`}</span>
       </div>
     </div>
   );
-}
+});
 
-function RiskCard({ risk }: { risk: RiskPrediction }) {
+const RiskCard = memo(function RiskCard({ risk }: { risk: RiskPrediction }) {
   return (
-    <div className="risk-card">
+    <div className="risk-card" style={risk.category === 'emergency_alert' ? { background: 'rgba(255, 59, 59, 0.2)', borderColor: 'var(--crimson)' } : {}}>
       <div className="risk-header">
-        <span className="risk-title">{risk.title}</span>
-        <span className="risk-prob">{risk.probabilityPercent}% PROB</span>
+        <span className="risk-title" style={risk.category === 'emergency_alert' ? { color: '#ff5f5f' } : {}}>{risk.title}</span>
+        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+          <span className="risk-conf" style={{
+            fontSize: '0.6rem',
+            background: 'rgba(255,255,255,0.08)',
+            padding: '2px 6px',
+            borderRadius: '4px',
+            fontFamily: 'Space Mono',
+            color: 'var(--gray-300)'
+          }}>
+            Conf: {risk.confidencePercent || 94}%
+          </span>
+          <span className="risk-prob" style={risk.category === 'emergency_alert' ? { background: 'var(--crimson)' } : {}}>{risk.probabilityPercent}% PROB</span>
+        </div>
       </div>
       <ul className="risk-reasons">
         {risk.reasoning.map((r, i) => <li key={i}>{r}</li>)}
       </ul>
-      <div className="risk-impact">
-        ⚡ IMPACT IN: {risk.timeToImpactMinutes} MINS
+      <div className="risk-impact" style={risk.category === 'emergency_alert' ? { color: '#ff5f5f' } : {}}>
+        ⚡ IMPACT IN: {risk.timeToImpactMinutes === 0 ? 'IMMEDIATE' : `${risk.timeToImpactMinutes} MINS`}
       </div>
     </div>
   );
-}
+});
 
-function RecCard({ rec }: { rec: AgentRecommendation }) {
+const RecCard = memo(function RecCard({ rec }: { rec: AgentRecommendation }) {
   return (
     <div className="rec-card">
-      <div className="rec-stripe" />
+      <div className="rec-stripe" style={rec.priority === 'critical' ? { background: 'var(--crimson)' } : {}} />
       <div className="rec-top">
         <span className="rec-domain">{rec.domain} AGENT</span>
-        <span className={`rec-priority ${rec.priority}`}>{rec.priority}</span>
+        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+          <span className="rec-confidence" style={{
+            fontSize: '0.62rem',
+            background: 'rgba(255,255,255,0.06)',
+            color: 'var(--gray-300)',
+            padding: '2px 6px',
+            borderRadius: '4px',
+            border: '1px solid var(--border)',
+            fontFamily: 'Space Mono'
+          }}>
+            {rec.confidencePercent || 92}% CONFIDENCE
+          </span>
+          <span className={`rec-priority ${rec.priority}`}>{rec.priority}</span>
+        </div>
       </div>
       <p className="rec-action">{rec.action}</p>
       <div className="rec-reason">
@@ -64,9 +94,9 @@ function RecCard({ rec }: { rec: AgentRecommendation }) {
       <button className="rec-btn">✓ EXECUTE ACTION</button>
     </div>
   );
-}
+});
 
-function ChartBars({ gateId, current, timeline }: { gateId: string; current: number; timeline: { gates: Record<string, { timeOffsetMinutes: number; value: number }[]> } }) {
+const ChartBars = memo(function ChartBars({ gateId, current, timeline }: { gateId: string; current: number; timeline: { gates: Record<string, { timeOffsetMinutes: number; value: number; confidencePercent: number }[]> } }) {
   const pts = timeline.gates[gateId] || [];
   const bars = [
     { label: 'Now', value: current },
@@ -89,9 +119,53 @@ function ChartBars({ gateId, current, timeline }: { gateId: string; current: num
       </div>
     </div>
   );
-}
+});
 
-function ZoneCard({ zone }: { zone: ZoneData }) {
+const TimelineItemView = memo(function TimelineItemView({ item, isLast }: { item: TimelineRecommendation; isLast: boolean }) {
+  return (
+    <div className="timeline-item" style={{
+      display: 'flex', gap: 12, marginBottom: isLast ? 0 : 16, position: 'relative'
+    }}>
+      {/* Node bullet */}
+      <div style={{
+        display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative'
+      }}>
+        <div style={{
+          width: 28, height: 28, borderRadius: '50%',
+          background: 'var(--cyan-dim)', border: '1.5px solid var(--cyan)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: '0.6rem', fontFamily: 'Space Mono', color: 'var(--cyan)',
+          fontWeight: 700, zIndex: 2
+        }}>
+          {item.label === 'Now' ? 'Now' : `+${item.timeOffsetMinutes}`}
+        </div>
+        {!isLast && (
+          <div style={{
+            position: 'absolute', top: 28, bottom: -20, width: 1.5, background: 'var(--border)', zIndex: 1
+          }} />
+        )}
+      </div>
+      {/* Box */}
+      <div style={{
+        flex: 1, background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border)',
+        borderRadius: 8, padding: '10px 12px'
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+          <span style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--gray-100)' }}>{item.title}</span>
+          <span style={{
+            fontSize: '0.58rem', fontFamily: 'Space Mono', color: 'var(--cyan)',
+            background: 'var(--cyan-dim)', padding: '1px 5px', borderRadius: 4
+          }}>
+            {item.confidencePercent}% CONF
+          </span>
+        </div>
+        <p style={{ fontSize: '0.75rem', color: 'var(--gray-300)', lineHeight: 1.4 }}>{item.action}</p>
+      </div>
+    </div>
+  );
+});
+
+const ZoneCard = memo(function ZoneCard({ zone }: { zone: ZoneData }) {
   const cls = getCapClass(zone.crowdDensityPercent);
   return (
     <div className="zone-card">
@@ -104,21 +178,21 @@ function ZoneCard({ zone }: { zone: ZoneData }) {
       </div>
     </div>
   );
-}
+});
 
-function VolunteerItem({ vol }: { vol: VolunteerData }) {
+const VolunteerItem = memo(function VolunteerItem({ vol }: { vol: VolunteerData }) {
   const initials = vol.name.split(' ').map(n => n[0]).join('');
   return (
     <div className="volunteer-item">
       <div className="volunteer-avatar">{initials}</div>
       <div>
         <div className="volunteer-name">{vol.name}</div>
-        <div className="volunteer-zone">{vol.zoneId}</div>
+        <div className="volunteer-zone">{vol.zoneId === 'z_north' ? 'North Concourse' : vol.zoneId === 'z_south' ? 'South Concourse' : 'Food Court A'}</div>
       </div>
       <span className={`volunteer-status ${vol.status}`}>{vol.status}</span>
     </div>
   );
-}
+});
 
 // ── Main Dashboard ─────────────────────────────────────────────────────────────
 
@@ -126,11 +200,17 @@ export default function Dashboard({ data }: { data: IntelligencePayload }) {
   const { telemetry, predictions, recommendations } = data;
   const { gates, zones, transport, sustainability, volunteers } = telemetry;
 
-  // KPI data
-  const avgGateCap = Math.round(gates.reduce((s, g) => s + g.capacityPercent, 0) / gates.length);
-  const criticalRisks = predictions.risks.length;
-  const activeVolunteers = volunteers.filter(v => v.status === 'active').length;
-  const nextMetro = transport.find(t => t.type === 'metro');
+  // KPI data (memoized for efficiency)
+  const { activeGates, avgGateCap, criticalRisks, activeVolunteers, nextMetro } = useMemo(() => {
+    const actGates = gates.filter(g => g.capacityPercent > 0);
+    const avgCap = actGates.length > 0
+      ? Math.round(actGates.reduce((s, g) => s + g.capacityPercent, 0) / actGates.length)
+      : 0;
+    const critRisks = predictions.risks.length;
+    const actVols = volunteers.filter(v => v.status === 'active').length;
+    const metro = transport.find(t => t.type === 'metro');
+    return { activeGates: actGates, avgGateCap: avgCap, criticalRisks: critRisks, activeVolunteers: actVols, nextMetro: metro };
+  }, [gates, predictions.risks.length, volunteers, transport]);
 
   // AI Briefing
   const [briefing, setBriefing] = useState<string>('Fetching operational briefing...');
@@ -149,7 +229,7 @@ export default function Dashboard({ data }: { data: IntelligencePayload }) {
       }
     };
     fetchBriefing();
-    const interval = setInterval(fetchBriefing, 30000); // refresh every 30s
+    const interval = setInterval(fetchBriefing, 10000); // refresh every 10s to sync simulation changes fast
     return () => clearInterval(interval);
   }, []);
 
@@ -161,7 +241,7 @@ export default function Dashboard({ data }: { data: IntelligencePayload }) {
         <div className="kpi-card cyan">
           <div className="kpi-label">Avg Gate Capacity</div>
           <div className="kpi-value cyan">{avgGateCap}%</div>
-          <div className="kpi-sub">{gates.length} gates monitored</div>
+          <div className="kpi-sub">{activeGates.length} gates active</div>
         </div>
         <div className="kpi-card crimson">
           <div className="kpi-label">Active Risks</div>
@@ -191,7 +271,7 @@ export default function Dashboard({ data }: { data: IntelligencePayload }) {
           background: 'var(--cyan-dim)', border: '1px solid var(--cyan-glow)',
           display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--cyan)'
         }}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+          <svg style={{ marginTop: 8 }} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
         </div>
         <div style={{ flex: 1 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
@@ -210,7 +290,7 @@ export default function Dashboard({ data }: { data: IntelligencePayload }) {
           <Widget
             title="Gate Operations"
             icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>}
-            badge={{ text: 'LIVE', color: 'cyan' }}
+            badge={{ text: telemetry.activeScenario !== 'none' ? 'SIMULATION' : 'LIVE', color: telemetry.activeScenario !== 'none' ? 'crimson' : 'cyan' }}
           >
             {gates.map(g => <GateCard key={g.id} gate={g} />)}
           </Widget>
@@ -223,7 +303,7 @@ export default function Dashboard({ data }: { data: IntelligencePayload }) {
           </Widget>
         </div>
 
-        {/* COL 2: Predictions */}
+        {/* COL 2: Predictions & Timelines */}
         <div className="col-gap">
           <Widget
             title="Predictive Timeline · Gate 6"
@@ -234,6 +314,26 @@ export default function Dashboard({ data }: { data: IntelligencePayload }) {
               current={gates.find(g => g.id === 'g6')?.capacityPercent || 0}
               timeline={predictions.timeline}
             />
+          </Widget>
+
+          <Widget
+            title="Operational Timeline & AI Forecast"
+            icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>}
+            badge={{ text: 'FORECAST', color: 'cyan' }}
+          >
+            <div style={{ display: 'flex', flexDirection: 'column', padding: '4px 0' }}>
+              {predictions.timelineRecommendations && predictions.timelineRecommendations.length > 0 ? (
+                predictions.timelineRecommendations.map((item, index) => (
+                  <TimelineItemView
+                    key={item.timeOffsetMinutes}
+                    item={item}
+                    isLast={index === (predictions.timelineRecommendations?.length ?? 0) - 1}
+                  />
+                ))
+              ) : (
+                <p style={{ fontStyle: 'italic', fontSize: '0.8rem', color: 'var(--gray-400)' }}>No timeline forecasts available.</p>
+              )}
+            </div>
           </Widget>
 
           <Widget
@@ -302,6 +402,58 @@ export default function Dashboard({ data }: { data: IntelligencePayload }) {
           </Widget>
         </div>
       </div>
+
+      {/* Stadium Health Score Bottom Panel */}
+      <div className="stadium-health-panel" style={{
+        background: 'var(--bg-card)', border: '1px solid var(--border)',
+        borderRadius: 14, padding: 20, marginTop: 20, display: 'flex', gap: 24, alignItems: 'center',
+        flexWrap: 'wrap', position: 'relative', overflow: 'hidden'
+      }}>
+        <div style={{
+          position: 'absolute', top: 0, left: 0, right: 0, height: 1,
+          background: 'linear-gradient(90deg, transparent, var(--cyan-glow), transparent)'
+        }} />
+        
+        {/* Circle Gauge */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          <div style={{
+            width: 72, height: 72, borderRadius: '50%',
+            background: 'var(--cyan-dim)', border: '2px solid var(--cyan)',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+            boxShadow: '0 0 16px var(--cyan-glow)', flexShrink: 0
+          }}>
+            <span style={{ fontFamily: 'Space Mono', fontSize: '1.4rem', fontWeight: 800, color: 'var(--cyan)' }}>
+              {telemetry.stadiumHealth || 87}
+            </span>
+            <span style={{ fontSize: '0.55rem', color: 'var(--gray-400)', textTransform: 'uppercase', letterSpacing: 0.5 }}>Health</span>
+          </div>
+          <div>
+            <h4 style={{ fontFamily: 'Space Mono', fontSize: '0.72rem', letterSpacing: 2, color: 'var(--gray-100)', textTransform: 'uppercase', marginBottom: 2 }}>AI Stadium Health Score</h4>
+            <p style={{ fontSize: '0.75rem', color: 'var(--gray-400)' }}>Aggregated real-time metrics summarizing safety, coverage, and transport efficiency.</p>
+          </div>
+        </div>
+
+        {/* Sub-metrics */}
+        <div style={{ flex: 1, display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, minWidth: 280 }} className="sub-health-grid">
+          {[
+            { label: 'Crowd Safety', value: telemetry.crowdSafety || 92, color: 'var(--cyan)' },
+            { label: 'Transport Efficiency', value: telemetry.transportHealth || 81, color: 'var(--amber)' },
+            { label: 'Security Health', value: telemetry.securityHealth || 96, color: 'var(--crimson)' },
+            { label: 'Volunteer Coverage', value: telemetry.volunteerCoverage || 88, color: 'var(--emerald)' }
+          ].map(item => (
+            <div key={item.label} style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border)', borderRadius: 8, padding: '10px 12px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', marginBottom: 6, fontFamily: 'Space Mono' }}>
+                <span style={{ color: 'var(--gray-400)', textTransform: 'uppercase' }}>{item.label}</span>
+                <span style={{ fontWeight: 700, color: '#fff' }}>{item.value}%</span>
+              </div>
+              <div style={{ height: 4, background: 'var(--gray-600)', borderRadius: 2, overflow: 'hidden' }}>
+                <div style={{ height: '100%', background: item.color, width: `${item.value}%`, transition: 'width 0.8s ease' }} />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
     </div>
   );
 }

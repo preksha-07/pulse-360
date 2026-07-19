@@ -25,10 +25,18 @@ describe('CoordinatorAgent', () => {
           waterUsageLiters: 2000,
           wasteKg: 150
         },
-        volunteers: []
+        volunteers: [],
+        stadiumHealth: 87,
+        crowdSafety: 92,
+        transportHealth: 81,
+        securityHealth: 95,
+        volunteerCoverage: 90,
+        evacuationReadiness: 94,
+        activeScenario: 'none'
       },
       risks: [],
-      timeline: { gates: {} }
+      timeline: { gates: {} },
+      timelineRecommendations: []
     };
   });
 
@@ -45,7 +53,8 @@ describe('CoordinatorAgent', () => {
       title: 'Impending Metro Surge at Gate 6',
       probabilityPercent: 92,
       timeToImpactMinutes: 8,
-      reasoning: ['Metro arriving soon']
+      reasoning: ['Metro arriving soon'],
+      confidencePercent: 94
     });
 
     const recommendations = agent.process(mockPrediction);
@@ -71,7 +80,8 @@ describe('CoordinatorAgent', () => {
       title: 'Gate 6 Overload',
       probabilityPercent: 99,
       timeToImpactMinutes: 0,
-      reasoning: ['Capacity at 95%']
+      reasoning: ['Capacity at 95%'],
+      confidencePercent: 94
     });
 
     const recommendations = agent.process(mockPrediction);
@@ -104,7 +114,8 @@ describe('CoordinatorAgent', () => {
       title: 'Gate 1 Overload',
       probabilityPercent: 95,
       timeToImpactMinutes: 0,
-      reasoning: ['Queue > 20 mins']
+      reasoning: ['Queue > 20 mins'],
+      confidencePercent: 94
     });
 
     const recommendations = agent.process(mockPrediction);

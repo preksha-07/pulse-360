@@ -47,7 +47,14 @@ describe('Gemini Integration Helpers', () => {
           waterUsageLiters: 1000,
           wasteKg: 100
         },
-        volunteers: []
+        volunteers: [],
+        stadiumHealth: 87,
+        crowdSafety: 92,
+        transportHealth: 81,
+        securityHealth: 95,
+        volunteerCoverage: 90,
+        evacuationReadiness: 94,
+        activeScenario: 'none'
       },
       risks: [
         {
@@ -57,10 +64,12 @@ describe('Gemini Integration Helpers', () => {
           title: 'Impending Metro Surge at Gate 6',
           probabilityPercent: 92,
           timeToImpactMinutes: 5,
-          reasoning: ['Metro arriving in 5 mins']
+          reasoning: ['Metro arriving in 5 mins'],
+          confidencePercent: 94
         }
       ],
-      timeline: { gates: {} }
+      timeline: { gates: {} },
+      timelineRecommendations: []
     };
 
     mockRecommendations = [
@@ -69,7 +78,8 @@ describe('Gemini Integration Helpers', () => {
         domain: 'volunteer',
         action: 'Reassign 5 volunteers to Gate 6',
         reasoning: 'Help clear queues',
-        priority: 'high'
+        priority: 'high',
+        confidencePercent: 92
       }
     ];
   });

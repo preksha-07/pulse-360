@@ -4,13 +4,16 @@
 
 ## 🔍 At a Glance
 
+-   **🎛 AI What-If Scenario Simulator**: Simulates 6 major crisis events and instantly recalculates all metrics.
+-   **🧠 Deterministic Decision Engine**: Computes risk levels and coordinates prioritized actions with explainability indicators.
+-   **⏱ Predictive Operational Timeline**: Forecasts timeline recommendations at +10, +20, and +30 minute intervals.
 -   **🔮 Predictive Crowd Intelligence**: Forecasts crowd movements +10, +20, and +30 minutes in advance.
 -   **🤖 AI Operations Coordinator**: Formulates dynamic action recommendations based on predictive states.
--   **⏱ Real-Time Telemetry Simulator**: Runs millisecond calculations simulating crowd stand and transit surges.
--   **💬 Multilingual Fan Assistant**: Integrates Gemini Chatbot supporting matchday operational queries in 8 languages.
+-   **⏱ Real-Time Telemetry Simulator**: Runs calculations simulating crowd stands and transit surges.
+-   **💬 Multilingual Fan Assistant**: Integrates Gemini Chatbot supporting matchday queries in 8 languages.
 -   **👷 Volunteer Management**: Features automated reassignments matching live crowd stand loads.
 -   **👮 Security Heatmaps**: Evaluates live security threat logs and features interactive evacuation drills.
--   **📄 Operational Briefing**: Synthesizes multi-agent state recommendations into incident officer reports.
+-   **📄 Operational Briefing**: Synthesizes coordinator state recommendations into incident officer reports.
 -   **🛠 Tech Stack**: Strict TypeScript React 19 Client + Node/Express Server.
 -   **🧪 Robust Testing**: Covered by 36 server tests, 31 client tests, and 4 Playwright E2E tests (71 total).
 -   **📖 Complete Documentation**: Fully typed and production-ready operational architecture guides.
@@ -38,7 +41,7 @@ This latency leads to:
 - Heightened security risks during crowd surges.
 - Operational inefficiencies in energy and waste mitigation.
 
-**Pulse360** changes the paradigm from **reactive monitoring** to **predictive decision intelligence**. By combining deterministic simulations with a multi-agent AI coordinator powered by Google Gemini, Pulse360 forecasts crowd density, entry loads, and transportation impacts at **+10, +20, and +30 minute** thresholds. It delivers role-specific portals to ensure fans, organizers, volunteers, and security teams are informed and coordinated before issues arise.
+**Pulse360** changes the paradigm from **reactive monitoring** to **predictive decision intelligence**. By combining deterministic simulations with an AI-assisted coordination pipeline powered by Google Gemini, Pulse360 forecasts crowd density, entry loads, and transportation impacts at **+10, +20, and +30 minute** thresholds. It delivers role-specific portals to ensure fans, organizers, volunteers, and security teams are informed and coordinated before issues arise.
 
 ## 💡 Why Pulse360?
 
@@ -50,9 +53,11 @@ This latency leads to:
 
 ## ✨ 2. Key Features
 
-Pulse360 provides four role-specific interfaces:
+Pulse360 provides role-specific command consoles:
 
--   **🏟 Command Center (Organizer)**: Operations command dashboard with real-time telemetry, predictive analytics, and AI-generated operational briefings.
+-   **🏟 Command Center (Organizer)**: Operations command dashboard presenting real-time telemetry, predictive timeline charts, dynamic operational briefings, and explainability confidence scores.
+-   **🎛 What-If Scenario Simulator**: Purple-accented crisis console enabling interactive injection of Heavy Rain, Metro Delay, Medical Emergency, Gate Closure, VIP Arrival, or Goal Surge events.
+-   **📊 Incident Replay Modal**: Generates post-incident post-mortems summarizing timeline, root causes, AI actions, and future lessons learned.
 -   **👤 Fan Portal**: Mobile-first entry recommendation engine, transport arrival countdowns, and a **multilingual Gemini Chatbot** translating matchday queries on wait times and routing.
 -   **👷 Volunteer Portal**: Interactive roster layout with AI-flagged redeployment alerts mapping volunteer locations against live stand densities.
 -   **👮 Security Portal**: Dynamic crowd heatmap matrix, forecasted threats panel, and an **interactive evacuation drill simulator** displaying optimized AI evacuation paths.
@@ -87,27 +92,35 @@ Our operations model adheres to the **Predict → Coordinate → Explain → Opt
 
 ```mermaid
 graph TD
-    subgraph "1. Predict"
-        TE[TelemetryEngine] -->|2s interval tick| PE[PredictionEngine]
-        PE -->|Forecast Timeline + Risks| CA[CoordinatorAgent]
-    end
+    TE[Telemetry Engine]
+    PE[Prediction Engine]
+    RS[Risk Scoring Engine]
+    DE[Decision Engine]
+    CO[Coordinator Agent]
+    GM[Gemini Explanation Layer]
+    UI[Role-specific Portals]
 
-    subgraph "2. Coordinate"
-        CA -->|Synthesize domains| Recs[Agent Recommendations]
-    end
-
-    subgraph "3. Explain"
-        Recs -->|Prompt Injection| Gemini[Gemini 2.0 Flash]
-        Gemini -->|Generates Briefing| Brief[Operational Briefing]
-    end
-
-    subgraph "4. Optimize"
-        Brief & Recs -->|Actions dispatched| Portals[User Portals]
-    end
+    TE --> PE
+    PE --> RS
+    RS --> DE
+    DE --> CO
+    CO --> GM
+    GM --> UI
 ```
 
--   **Deterministic Predictions**: Telemetry calculations run on a high-speed engine in under 1ms, preventing latency issues.
+-   **Deterministic Predictions**: Telemetry calculations run on a high-speed engine, designed for low-latency in-memory predictions.
 -   **Gemini Explanations**: Google Gemini 2.0 Flash acts as the natural-language interface, translating telemetry vectors into operational briefings and multilingual fan answers.
+
+## ⚙️ Decision Engine
+
+The Decision Engine converts predicted operational states into prioritized actions before invoking Gemini.
+
+Pipeline:
+Telemetry ➜ Prediction ➜ Risk Scoring ➜ Decision Engine ➜ Explainability ➜ Role-specific Actions
+
+**The Decision Engine applies deterministic operational rules before AI explanation, ensuring that recommendations remain reproducible, auditable, and consistent across identical telemetry conditions.**
+
+Unlike purely generative systems, operational decisions are deterministic and reproducible, while Gemini focuses on natural-language explanations. When simulation scenarios (such as Heavy Rain or Metro Delay) are injected, the telemetry and prediction matrices are overridden, dynamically driving the Decision Engine to produce scenario-specific, reproducible, and explainable action directives.
 
 ### System Topology Diagram
 ![Pulse360 System Topology](docs/assets/architecture.png)
@@ -194,7 +207,7 @@ For deep-dives into cloud hosting options (like Google Cloud Run), refer to the 
 
 ## ♿ 9. Accessibility (a11y)
 
--   **Color Contrast**: Core text blocks pass WCAG 2.1 AAA contrast guidelines (ratio exceeding 7.2:1).
+-   **Color Contrast**: Core text blocks are optimized for WCAG-compliant AAA color contrast.
 -   **No Color-Only Cues**: Telemetry items utilize distinct icons (🚇, 👥, ⏱) and textual descriptors (`SAFE`, `ELEVATED`, `CRITICAL`).
 -   **Keyboard Accessible**: Tabs and interactive forms support semantic `tabindex` and `role="tab"` controls.
 -   For more details, see the [Accessibility Docs](docs/accessibility.md).
@@ -203,8 +216,8 @@ For deep-dives into cloud hosting options (like Google Cloud Run), refer to the 
 
 ## ⚡ 10. Performance Optimization
 
--   **SSE Communication**: Single HTTP stream eliminates socket negotiation round-trips and polling overhead.
--   **Stateless Computations**: Telemetry and forecast vectors are computed in memory, bypassing database reads.
+-   **SSE Communication**: Single HTTP stream using lightweight payloads, eliminating socket negotiation round-trips and polling overhead.
+-   **Stateless Computations**: Telemetry and forecast vectors are computed in memory, designed for low-latency in-memory predictions.
 -   **AI Throttle Intervals**: Dashboard briefings are restricted to 30-second fetches to optimize token usage.
 
 ### 📊 Performance & Audits Report
@@ -212,9 +225,8 @@ The platform has been audited using Google Lighthouse and custom profiling tools
 *   **Lighthouse Performance**: Optimized for high Lighthouse performance scores (zero CSS layout framework overhead).
 *   **Lighthouse Accessibility**: Optimized for high Lighthouse accessibility scores (complete WAI-ARIA tab list navigation support, color contrast exceeding WCAG AAA standard).
 *   **Best Practices & SEO**: Designed to satisfy best-practice and SEO audits (semantic page layout tags, secure HTTP headers, Zod parameter validators).
-*   **Prediction Engine Latency**: Low-latency, in-memory execution times for future state metrics.
-*   **Operational Briefing Latency**: Under 1 ms mock briefing synthesis, ~1.5–2.0 s streaming Gemini API call.
-*   **Average SSE Packet Size**: **1.1 KB** payload bandwidth.
+*   **Prediction Engine Latency**: Designed for low-latency in-memory predictions.
+*   **Operational Briefing Latency**: Fast local briefings, with Gemini streaming responses optimized for user feedback speed.
 
 ---
 
@@ -253,8 +265,8 @@ npm run test:e2e
 ## 🔮 13. Future Scope
 
 1.  **Multi-Stadium Clustering**: Support coordinating multiple stadiums from a single regional command center.
-2.  **Edge IoT Integrations**: Integrate live turnstile ticket checks and transit GPS sensors.
-3.  **Advanced Evacuation Paths**: Incorporate dynamic path-finding models to output routing coordinates.
+2.  **Edge IoT Integrations**: Integrate live turnstile ticket checks and weather feeds for real-world scenario simulation.
+3.  **Simulation Learning Loop**: Historical event replay analysis and reinforcement learning for adaptive crowd routing strategies.
 
 ---
 
